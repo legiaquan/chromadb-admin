@@ -8,7 +8,7 @@ export function getConfig(): AppConfig {
     return JSON.parse(config)
   } else {
     return {
-      connectionString: 'http://chromadb:8000',
+      connectionString: 'http://localhost:8000',
       currentCollection: '',
       authType: 'no_auth',
       token: '',

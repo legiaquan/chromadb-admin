@@ -24,23 +24,23 @@ services:
       start_period: 40s
 
   # ChromaDB Admin UI Service
-  chromadb-admin:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: chromadb-admin-ui
-    ports:
-      - "3001:3001"
-    networks:
-      - chromadb-network
-    depends_on:
-      chromadb:
-        condition: service_healthy
-    environment:
-      - NODE_ENV=production
-      # App có thể sử dụng biến này để connect tới ChromaDB
-      - CHROMADB_URL=http://chromadb:8000
-    restart: unless-stopped
+  # chromadb-admin:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: chromadb-admin-ui
+  #   ports:
+  #     - "3001:3001"
+  #   networks:
+  #     - chromadb-network
+  #   depends_on:
+  #     chromadb:
+  #       condition: service_healthy
+  #   environment:
+  #     - NODE_ENV=production
+  #     # App có thể sử dụng biến này để connect tới ChromaDB
+  #     - CHROMADB_URL=http://chromadb:8000
+  #   restart: unless-stopped
 
 networks:
   chromadb-network:
