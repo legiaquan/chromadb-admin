@@ -1,0 +1,69 @@
+services:
+  # ChromaDB Service
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb-server
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      CHROMA_TELEMETRY_ENABLED: "false"
+    restart: always
+      # Uncomment below for token authentication
+      # - CHROMA_SERVER_AUTHN_CREDENTIALS=test-token
+      # - CHROMA_AUTH_TOKEN_TRANSPORT_HEADER=AUTHORIZATION
+      # - CHROMA_SERVER_AUTHN_PROVIDER=chromadb.auth.token_authn.TokenAuthenticationServerProvider
+    ports:
+      - "8000:8000"
+    networks:
+      - chromadb-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ChromaDB Admin UI Service
+  chromadb-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chromadb-admin-ui
+    ports:
+      - "3001:3001"
+    networks:
+      - chromadb-network
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      # App có thể sử dụng biến này để connect tới ChromaDB
+      - CHROMADB_URL=http://chromadb:8000
+    restart: unless-stopped
+
+networks:
+  chromadb-network:
+    driver: bridge
+
+volumes:
+  chroma_data:
+    driver: local
+
+# Hướng dẫn sử dụng:
+# 1. Build và start tất cả services: docker-compose up -d
+# 2. Stop tất cả services: docker-compose down
+# 3. Stop và xóa volumes: docker-compose down -v
+# 4. Rebuild image: docker-compose up -d --build
+# 5. Xem logs: docker-compose logs -f [service-name]
+#
+# Truy cập:
+# - ChromaDB API: http://localhost:8000
+# - ChromaDB Admin UI: http://localhost:3001
+#
+# Với token authentication (uncomment các biến CHROMA_SERVER_AUTHN_* ở trên):
+# docker run -d --rm -p "8000:8000"  \
+#   -e CHROMA_SERVER_AUTHN_CREDENTIALS="test-token" \
+#   -e CHROMA_AUTH_TOKEN_TRANSPORT_HEADER="AUTHORIZATION" \
+#   -e CHROMA_SERVER_AUTHN_PROVIDER="chromadb.auth.token_authn.TokenAuthenticationServerProvider" \
+#   --name chroma_with_token chromadb/chroma:latest
